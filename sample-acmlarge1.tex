@@ -1,0 +1,160 @@
+\documentclass[12pt]{article}
+\usepackage{graphicx}
+\usepackage[english]{babel}
+\usepackage{amsmath, amsfonts, amsthm}
+\usepackage{float}
+\usepackage{multicol}
+
+\title{}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\tableofcontents
+\newpage
+
+\section{Discriminant Component Analysis}
+
+\subsection{Fisher's LDA} 
+\hspace{10pt}
+Fisher's LDA involves solving the following problem: 
+\begin{equation}
+\label{eq:1}
+    W = \operatorname{arg_T\,max} \frac{|T^TS_bT|}{|T^TS_wT|}
+\end{equation}
+where $S_b$ and $S_w$ are the within-class and between class scatter matrices respectively.
+
+And the solute onto this problem can be obtained analytically by solving a generalized
+eigenvalue problem:
+\begin{equation}
+\label{eq:2}
+    S_b W = S_w WA_w.
+\end{equation}
+
+However, there are two drawbacks with LDA based methods: \eqref{eq:1} the number of linear
+bases is limited by the number of classes, and \eqref{eq:2} the bases are not orthogonal in general.
+
+\subsection{DCA Algorithms}
+\hspace{10pt}
+DCA Scheme starting from the full signal space, we find the most discriminatory (optimal)
+projection D1 solving \eqref{eq:2}. Then we construct a subspace which is orthogonal to that optimal
+projection and again find an optimal projection in the subspace. By repeating the above procedure, we obtain a new feature representation for the original signal. At least two DCA algorithms are available: the first one is suitable for any-class problems, the second one is valid only for two-class problems but more robust.
+
+\subsection{Applications of DCA}
+\hspace{10pt}
+Here we propose new data-dependent distance metrics based on DCA. Initially, the weight vector (eigenvalues) 
+$\mu = [\mu_1, \mu_2, \ldots, \mu_n]$ and the linear mapping matrix $D = [D_1, D_2, \ldots, D_n]$ are 
+produced by DCA based on available samples. We then linearly map the original signal $x$ into a new feature $y$:
+\[ y = D^T x. \]
+Assuming $x_1$ and $x_2$ are two samples, and $y_1, y_2$ are the corresponding features in the transformed
+space, then one new distance metric is defined as follows::
+\begin{equation}
+\label{eq:3}
+d_{DCA}(y_1, y_2) = \sqrt{\sum_{i=1}^{n} \mu_i (y_{1,i} - y_{2,i})^2}.
+\end{equation}
+It is noted that when the estimated matrices $S_w$ and $S_b$ are perturbed far away from the true ones or the second-order statistics is not sufficient to describe the underlying distribution, it is better not to impose the weights strictly. Thus, we propose a more general distance metric (GDCA):
+
+\begin{equation}
+\label{eq:4}
+d_{GDCA}(y_1, y_2) = \sqrt{\sum_{i=1}^{n} f(\mu_i, \frac{n}{N}, h) (y_{1,i} - y_{2,i})^2},
+\end{equation}
+where $f$ is a monotonic function of $\mu_i$’s, and also a function of the dimension/size ratio $\frac{n}{N}$ and the
+complexity of the underlying distribution $h$.
+
+\subsection{DCA Algorithm Iteration Steps}
+\hspace{10pt}
+\begin{itemize}
+    \item Initialization of DCA algorithm by computing mean vectors, covariance matrix, and scatter matrices;
+    \item Iteration starts with solving an eigenproblem to find the most discriminatory projection;
+    \item Discriminant basis and eigenvalue are obtained and a Gram-Schmidt operation is performed;
+    \item Preparation for the next iteration involves computing a new matrix and new scatter matrices;
+\end{itemize}
+
+\subsection{Comparison of DCA and LDA}
+
+\textbf{Comparison:}
+\begin{enumerate}
+    \item DCA provides more discriminatory information than LDA, which makes distance metrics more robust (Figure~\ref{fig:1});
+    \item DCA is characterized by an elliptical NN rule, unlike the rectilinear NN rule of LDA, which makes it less sensitive to changes in parameter;
+    \item Orthogonal DCA bases provide advantages in robustness of execution compared to non-perpendicular LDA bases, especially in case of estimation errors;
+    \item When changing the parameters, both methods deviate from the ideal projections, but it is assumed that the change in the percentage of the DCA distance is less than that of the LDA;
+    \item Changing the shape of the NN DCA rule presumably causes less performance degradation than that of the LDA;
+    \item Simulation on three-class data shows that the distance changes for DCA are significantly less than for LDA, on average 47.4\% versus 100.6\%, respectively.
+\end{enumerate}
+
+\newpage
+
+\section{Experiment}
+
+\subsection{Face Recognition}
+\hspace{10pt}
+The experiment we conducted here is the application of subspace DCA for face recognition and its comparison with a subspace LDA system The face subspace was obtained by training on 1038 FERET images from total 444 classes with only 2 to 4 training samples per class. We perform simple normalization to all input face images and the normalized image size is chosen to be \(48 \times 42\). Finally, the near-optimal dimension of the subspace is chosen to be 300 \eqref{eq:4}. We apply both methods (subspace LDA and subspace DCA) to a probe/testing set of 115 images and gallery set of 738 images. While both methods deliver almost identical better performance using soft LDA/DCA distance metric (refer to for more detail). Strict LDA distance metric have far worse performance than strict DCA distance metric \eqref{eq:3}. When soft metrics are used, the ratio of minimal weight and maximal weight used for LDA is 0.12 while for DCA the normalized weights dropped rapidly with the $65^{th}$ weight being \(5.4 \times 10^{-4}\).
+
+\subsection{Synthetic data}
+\hspace{10pt}
+For the synthetic data, we performed two types of experiments. The first type uses true mean vectors and covariance matrices, or those robustly estimated from a large number of samples, to carry out Linear Discriminant Analysis (LDA) and Discriminant Component Analysis (DCA). The second type estimates these parameters with a limited number of samples and then carries out LDA and DCA.
+
+\newpage
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figure1.png}
+    \caption{Comparison of soft weights in DCA and LDA metrics}
+    \label{fig:1}
+\end{figure}
+
+The purpose of doing this is mainly to verify the idea of DCA conceptually without worrying about the parameter estimation problem. It also casts some insight into how robust the new method is. This in these experiments we list two performance scores: the left one is for true parameters while the right one is for estimated parameters.
+
+\newpage
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{figure2.png}
+    \caption{Dimensionality reduction}
+    \label{fig:2}
+\end{figure}
+
+For the synthetic data, we performed two types of experiments. The first type uses the true mean vectors and covariance matrices (or robustly estimated from large number of samples) to carry out LDA and DCA, while the second type estimates these parameters with limited number of samples and then carries out LDA and DCA.
+
+\begin{table}[h]
+\caption{Performance/error comparison when the underlying problem has close ideal Bayes error and LDA error: .1465 and .167.}
+\label{tab:m1}
+\vspace{10pt}
+\centering
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+Classifier & LDA & LDA-NN & DCA-NN & NN \\
+\hline
+$N_i$ = 10 & .249 & .245/.270 & .250/.268 & .282 \\
+\hline
+$N_i$ = 100 & .180 & .240/.244 & .241/.241 & .208 \\
+\hline
+\end{tabular}
+\end{table}
+
+\newpage
+
+\begin{table}[h]
+\caption{Performance/error comparison when the underlying problem has very different ideal Bayes error and LDA error: .089 and .207.}
+\label{tab:m2}
+\vspace{10pt}
+\centering
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+Classifier & LDA & LDA-NN & DCA-NN & NN \\
+\hline
+$N_i$ = 10 & .288 & .296/.312 & .269/.292 & .273 \\
+\hline
+$N_i$ = 100 & .218 & .288/.289 & .235/.242 & .208 \\
+\hline
+\end{tabular}
+\end{table}
+The first experiment (Table~\ref{tab:m1}) reports the performance comparison among different
+classifiers with a Gaussian distributed dataset which has close ideal Bayes and LDA errors based
+on true parameters. The second experiment (Table~\ref{tab:m2}) reports the performance comparison among
+different classifiers with a Dimensionality reduction (Figure~\ref{fig:2}) which has quite different ideal Bayes and LDA errors.
+
+\end{document}
